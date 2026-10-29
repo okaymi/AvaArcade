@@ -36,10 +36,11 @@
         
         <!-- Header -->
         <header class="bg-white/90 backdrop-blur-md px-4 py-3 border-b border-orange-100 flex items-center justify-between z-20 shrink-0">
-            <div class="flex items-center space-x-3">
+  <div class="flex items-center space-x-3">
                 <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center text-white shadow-md shadow-orange-500/20 overflow-hidden" id="headerAvatarBox">
-                    <img src="image_0.jpeg" class="w-full h-full object-cover" alt="預設寵物頭像">
+                    <i class="fa-solid fa-paw text-lg"></i>
                 </div>
+
                 <div>
                     <h1 class="font-display font-bold text-lg text-slate-800 flex items-center gap-2">
                         <span id="headerPetName">多比</span>
@@ -89,17 +90,19 @@
                         </div>
 
                         <!-- Single Headshot Upload -->
-                        <div>
+  <div>
                             <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">上傳寵物大頭照 (1張)</label>
                             <label class="border-2 border-dashed border-orange-200 hover:border-orange-400 bg-white rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer transition group h-32 relative overflow-hidden">
                                 <div id="headshotPreviewContainer" class="absolute inset-0 flex flex-col items-center justify-center bg-white">
-                                    <img src="image_0.jpeg" class="w-full h-full object-cover" alt="預設寵物預覽">
+                                    <i class="fa-solid fa-camera-retro text-orange-400 group-hover:scale-110 transition text-2xl mb-1"></i>
+                                    <span class="text-xs text-slate-500 font-medium" id="headshotText">點擊上傳寵物大頭照</span>
                                 </div>
                                 <input type="file" id="headshotInput" accept="image/*" class="hidden" onchange="handleHeadshotUpload(this)">
                             </label>
                         </div>
                     </div>
                 </div>
+
 
                 <div class="max-w-lg mx-auto w-full pt-2 pb-4">
                     <button onclick="generatePet()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-orange-500 to-pink-500 text-white font-display font-bold text-base shadow-xl shadow-orange-500/30 hover:opacity-95 transition flex items-center justify-center gap-2">
