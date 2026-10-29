@@ -38,14 +38,14 @@
         <header class="bg-white/90 backdrop-blur-md px-4 py-3 border-b border-orange-100 flex items-center justify-between z-20 shrink-0">
             <div class="flex items-center space-x-3">
                 <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center text-white shadow-md shadow-orange-500/20 overflow-hidden" id="headerAvatarBox">
-                    <img src="image_0.png" class="w-full h-full object-cover" alt="預設寵物頭像">
+                    <img src="image_0.jpeg" class="w-full h-full object-cover" alt="預設寵物頭像">
                 </div>
                 <div>
                     <h1 class="font-display font-bold text-lg text-slate-800 flex items-center gap-2">
                         <span id="headerPetName">多比</span>
                         <span id="headerPetBadge" class="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-600 hidden">已連結</span>
                     </h1>
-                    <p class="text-xs text-slate-400" id="headerPetStatus">準備中...</p>
+                    <p class="text-xs text-slate-400" id="headerPetStatus">準備好了...</p>
                 </div>
             </div>
             
@@ -93,7 +93,7 @@
                             <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">上傳寵物大頭照 (1張)</label>
                             <label class="border-2 border-dashed border-orange-200 hover:border-orange-400 bg-white rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer transition group h-32 relative overflow-hidden">
                                 <div id="headshotPreviewContainer" class="absolute inset-0 flex flex-col items-center justify-center bg-white">
-                                    <img src="image_0.png" class="w-full h-full object-cover" alt="預設寵物預覽">
+                                    <img src="image_0.jpeg" class="w-full h-full object-cover" alt="預設寵物預覽">
                                 </div>
                                 <input type="file" id="headshotInput" accept="image/*" class="hidden" onchange="handleHeadshotUpload(this)">
                             </label>
@@ -236,7 +236,7 @@
     <!-- Script -->
     <script>
         // 設定預設圖片路徑
-        const DEFAULT_PET_AVATAR = "image_0.png";
+        const DEFAULT_PET_AVATAR = "image_0.jpeg";
 
         let petData = {
             name: "多比",
