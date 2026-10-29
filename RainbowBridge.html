@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>寵物專屬AI伴侶</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Fredoka', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-display { font-family: 'Fredoka', cursive, sans-serif; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-orange-50 via-amber-50 to-pink-50 h-full flex flex-col text-slate-800 antialiased overflow-hidden">
+
+    <div id="app" class="flex flex-col h-full w-full max-w-md mx-auto bg-white/80 backdrop-blur-xl shadow-2xl relative overflow-hidden sm:max-w-xl md:max-w-2xl lg:max-w-4xl sm:my-auto sm:h-[92vh] sm:rounded-3xl border border-white/40">
+        
+        <!-- Header -->
+        <header class="bg-white/90 backdrop-blur-md px-4 py-3 border-b border-orange-100 flex items-center justify-between z-20 shrink-0">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center text-white shadow-md shadow-orange-500/20 overflow-hidden" id="headerAvatarBox">
+                    <i class="fa-solid fa-paw text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-display font-bold text-lg text-slate-800 flex items-center gap-2">
+                        <span id="headerPetName">多比</span>
+                        <span id="headerPetBadge" class="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-600 hidden">已連結</span>
+                    </h1>
+                    <p class="text-xs text-slate-400" id="headerPetStatus">準備中...</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-2">
+                <button onclick="switchTab('dashboard')" id="navDashboardBtn" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-orange-500 text-white shadow-sm transition hidden">
+                    <i class="fa-solid fa-gamepad mr-1"></i>互動
+                </button>
+                <button onclick="switchTab('chat')" id="navChatBtn" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition hidden">
+                    <i class="fa-solid fa-comments mr-1"></i>對話
+                </button>
+                <button onclick="resetPet()" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-red-50 hover:text-red-500 text-slate-500 flex items-center justify-center transition" title="重新設定寵物">
+                    <i class="fa-solid fa-rotate-right text-sm"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Area -->
+        <main class="flex-1 relative overflow-hidden flex flex-col">
+
+            <!-- WIZARD SCREEN -->
+            <section id="wizardScreen" class="absolute inset-0 bg-white z-30 overflow-y-auto p-6 flex flex-col justify-between">
+                <div class="max-w-lg mx-auto w-full py-4">
+                    <div class="text-center mb-6">
+                        <div class="inline-flex w-16 h-16 rounded-3xl bg-gradient-to-tr from-orange-500 to-pink-500 text-white items-center justify-center text-2xl shadow-lg shadow-orange-500/30 mb-3">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        </div>
+                        <h2 class="font-display font-bold text-2xl text-slate-800" id="wizardTitle">建立你的寵物伴侶</h2>
+                        <p class="text-sm text-slate-500 mt-1">上傳一張大頭照，讓你的愛寵隨時陪你聊天！</p>
+                    </div>
+
+                    <div class="space-y-5 bg-orange-50/50 p-5 rounded-3xl border border-orange-100">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">寵物名字</label>
+                                <input type="text" id="setupName" value="多比" class="w-full px-4 py-3 rounded-2xl bg-white border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">品種 / 毛色特徵</label>
+                                <input type="text" id="setupBreed" value="比熊犬 (Bichon Frise)" class="w-full px-4 py-3 rounded-2xl bg-white border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
+                            </div>
+                        </div>
+
+                        <!-- Single Headshot Upload -->
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">上傳寵物大頭照 (1張)</label>
+                            <label class="border-2 border-dashed border-orange-200 hover:border-orange-400 bg-white rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer transition group h-32 relative overflow-hidden">
+                                <div id="headshotPreviewContainer" class="absolute inset-0 flex flex-col items-center justify-center bg-white">
+                                    <i class="fa-solid fa-camera-retro text-orange-400 group-hover:scale-110 transition text-2xl mb-1"></i>
+                                    <span class="text-xs text-slate-500 font-medium" id="headshotText">點擊上傳寵物大頭照</span>
+                                </div>
+                                <input type="file" id="headshotInput" accept="image/*" class="hidden" onchange="handleHeadshotUpload(this)">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="max-w-lg mx-auto w-full pt-2 pb-4">
+                    <button onclick="generatePet()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-orange-500 to-pink-500 text-white font-display font-bold text-base shadow-xl shadow-orange-500/30 hover:opacity-95 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-wand-magic text-lg"></i>
+                        <span id="generateBtnText">生成專屬伴侶</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- LOADING SCREEN -->
+            <section id="loadingScreen" class="absolute inset-0 bg-white/95 backdrop-blur-md z-40 hidden flex flex-col items-center justify-center p-6 text-center">
+                <div class="w-24 h-24 rounded-3xl bg-gradient-to-tr from-orange-500 to-pink-500 flex items-center justify-center text-white text-4xl shadow-2xl animate-bounce mb-6">
+                    <i class="fa-solid fa-dog"></i>
+                </div>
+                <h3 class="font-display font-bold text-2xl text-slate-800 mb-2" id="loadingTitle">寵物正在準備甦醒...</h3>
+                <p class="text-sm text-slate-500 max-w-xs mb-8">正在載入專屬心靈與對話模組...</p>
+                <div class="w-64 h-3 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200">
+                    <div id="loadingBar" class="h-full bg-gradient-to-r from-orange-500 to-pink-500 rounded-full transition-all duration-300" style="width: 70%"></div>
+                </div>
+            </section>
+
+            <!-- TAB 1: DASHBOARD -->
+            <div id="tabDashboard" class="absolute inset-0 flex flex-col hidden">
+                <div class="flex-1 relative bg-gradient-to-b from-sky-100 via-emerald-50 to-amber-50 overflow-hidden flex flex-col items-center justify-center">
+                    
+                    <div class="absolute top-4 left-4 bg-white/80 backdrop-blur-md px-3 py-1.5 rounded-2xl shadow-sm border border-white/60 flex items-center gap-2 text-xs font-medium text-slate-600">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span id="petMoodText">心情：超開心 ✨</span>
+                    </div>
+
+                    <div id="petSpeechBubble" class="absolute z-10 transition-all duration-300 transform -translate-y-24 bg-white px-4 py-2.5 rounded-2xl shadow-xl border border-orange-100 text-sm font-medium text-slate-700 max-w-xs text-center opacity-90 hidden">
+                        「主人快來陪我玩嘛！」
+                        <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-orange-100 rotate-45"></div>
+                    </div>
+
+                    <!-- Pet Stage -->
+                    <div id="petStage" class="relative w-full h-full flex items-center justify-center cursor-pointer select-none" onclick="triggerPetInteraction('pat')">
+                        <div id="petAvatarContainer" class="relative transition-transform duration-300 transform hover:scale-105 flex flex-col items-center">
+                            
+                            <div class="bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl shadow-lg border border-orange-200 mb-3 flex items-center gap-2">
+                                <div id="renderPetBadgeEmoji" class="text-xl">🐶</div>
+                                <div class="text-left">
+                                    <div id="renderPetName" class="text-xs font-bold text-slate-800">多比</div>
+                                    <div id="renderPetBreed" class="text-[10px] text-orange-600 font-medium">比熊犬</div>
+                                </div>
+                            </div>
+
+                            <div class="w-36 h-36 rounded-full overflow-hidden border-4 border-white shadow-2xl bg-orange-100 flex items-center justify-center relative">
+                                <img id="renderPetImage" src="" class="w-full h-full object-cover" alt="寵物頭像">
+                            </div>
+                            <div class="w-28 h-6 bg-black/15 rounded-full mx-auto mt-6 blur-sm transition-all duration-500"></div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="absolute bottom-4 left-4 right-4 bg-white/80 backdrop-blur-md p-3 rounded-2xl shadow-lg border border-white/60 flex items-center justify-around">
+                        <button onclick="triggerPetAction('run')" class="flex flex-col items-center gap-1 group">
+                            <div class="w-11 h-11 rounded-xl bg-orange-100 group-hover:bg-orange-500 text-orange-600 group-hover:text-white flex items-center justify-center transition shadow-sm">
+                                <i class="fa-solid fa-person-running text-sm"></i>
+                            </div>
+                            <span class="text-[11px] font-semibold text-slate-600">奔跑</span>
+                        </button>
+                        <button onclick="triggerPetAction('sit')" class="flex flex-col items-center gap-1 group">
+                            <div class="w-11 h-11 rounded-xl bg-amber-100 group-hover:bg-amber-500 text-amber-600 group-hover:text-white flex items-center justify-center transition shadow-sm">
+                                <i class="fa-solid fa-chair text-sm"></i>
+                            </div>
+                            <span class="text-[11px] font-semibold text-slate-600">坐下</span>
+                        </button>
+                        <button onclick="triggerPetAction('sound')" class="flex flex-col items-center gap-1 group">
+                            <div class="w-11 h-11 rounded-xl bg-pink-100 group-hover:bg-pink-500 text-pink-600 group-hover:text-white flex items-center justify-center transition shadow-sm">
+                                <i class="fa-solid fa-volume-high text-sm"></i>
+                            </div>
+                            <span class="text-[11px] font-semibold text-slate-600">叫聲</span>
+                        </button>
+                        <button onclick="triggerPetAction('sleep')" class="flex flex-col items-center gap-1 group">
+                            <div class="w-11 h-11 rounded-xl bg-indigo-100 group-hover:bg-indigo-500 text-indigo-600 group-hover:text-white flex items-center justify-center transition shadow-sm">
+                                <i class="fa-solid fa-moon text-sm"></i>
+                            </div>
+                            <span class="text-[11px] font-semibold text-slate-600">睡覺</span>
+                        </button>
+                        <button onclick="triggerPetAction('feed')" class="flex flex-col items-center gap-1 group">
+                            <div class="w-11 h-11 rounded-xl bg-emerald-100 group-hover:bg-emerald-500 text-emerald-600 group-hover:text-white flex items-center justify-center transition shadow-sm">
+                                <i class="fa-solid fa-bone text-sm"></i>
+                            </div>
+                            <span class="text-[11px] font-semibold text-slate-600">餵食</span>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- TAB 2: CHAT WITH DROPDOWN & SMART MAPPINGS -->
+            <div id="tabChat" class="absolute inset-0 bg-slate-50 flex flex-col hidden">
+                <!-- Dropdown Selector Bar -->
+                <div class="bg-white px-4 py-2.5 border-b border-slate-100 shrink-0 flex items-center gap-2">
+                    <span class="text-xs font-semibold text-orange-600 shrink-0"><i class="fa-solid fa-heart mr-1"></i>快捷心靈與日常提問：</span>
+                    <select id="quickQuestionSelect" onchange="handleQuickQuestionSelect(this)" class="flex-1 bg-orange-50 border border-orange-200 rounded-xl px-3 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-400">
+                        <option value="">-- 點擊選擇想問的問題 --</option>
+                        <!-- Options populated dynamically via JS -->
+                    </select>
+                </div>
+
+                <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-9 h-9 rounded-2xl overflow-hidden shadow-md shrink-0 bg-orange-200" id="chatPetAvatarBox">
+                            <img id="chatPetImg" src="" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex flex-col space-y-1 max-w-[80%]">
+                            <span id="chatPetNameLabel" class="text-xs font-semibold text-slate-500 px-1">多比</span>
+                            <div class="bg-white px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm border border-slate-100 text-sm text-slate-700" id="welcomeMsg">
+                                汪！主人~我是多比！快跟我聊天吧~ ✨
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-white border-t border-slate-100 shrink-0">
+                    <div class="flex items-center space-x-2">
+                        <label class="w-10 h-10 rounded-2xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 cursor-pointer transition shrink-0" title="上傳個人頭像">
+                            <i class="fa-solid fa-user-pen text-sm"></i>
+                            <input type="file" id="userAvatarInput" accept="image/*" class="hidden" onchange="handleUserAvatarUpload(this)">
+                        </label>
+                        <input type="text" id="chatInput" onkeydown="handleChatKeydown(event)" placeholder="輸入你想問的問題..." class="flex-1 px-4 py-3 rounded-2xl bg-slate-100 border-none text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
+                        <button onclick="sendChatMessage()" class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-500 to-pink-500 text-white flex items-center justify-center shadow-md hover:opacity-90 transition shrink-0">
+                            <i class="fa-solid fa-paper-plane text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Script -->
+    <script>
+        let petData = {
+            name: "多比",
+            breed: "比熊犬 (Bichon Frise)",
+            headshotUrl: ""
+        };
+        let userAvatarUrl = null;
+
+        // 動態取得寵物名字的輔助函式（將原本固定的 "多比" 換成使用者設定的名字）
+        function formatAnswer(text) {
+            const currentName = petData.name || "多比";
+            // 將字串中的 "多比" 動態替換為目前設定的名字
+            return text.replace(/多比/g, currentName);
+        }
+
+        // 1. 15個深情安慰與100個生活對話問答對應表（已將答案中的 "多比" 支援動態替換）
+        const rawQaPairs = {
+            // --- 15 個深情安慰問題 ---
+            "你在彩虹橋過得好嗎 ?": "我在這裡過得超級好哦！這裡有無限奔跑的綠草地、曬不完的暖陽，還有吃不完的肉肉。而且一點都不痛了，你不用擔心我哦！❤️",
+            "我今天好想你": "我也好想好想你！每當微風吹過的時候，那就是我在輕輕蹭你的臉頰喔。你要好好吃飯、好好照顧自己，知道嗎？✨",
+            "謝謝你曾經的陪伴": "不，該說謝謝的是我！能成為你的狗狗，是我這輩子最幸福、最驕傲的事。謝謝你給了我全世界最溫暖的家！🐾",
+            "還記得你最愛的零食": "當然記得！就是那包香噴噴的雞肉乾呀！每次想到口水都要流出來了呢。我有把那份美味永遠記在心裡喔！🤤",
+            "你喜歡夕陽嗎?": "超級喜歡！每當黃金色的夕陽灑下來的時候，我都覺得就像是你溫柔的手正摸著我的頭一樣溫暖呢。🌅",
+            "你最喜歡和我去那裡?": "我最喜歡跟你去公園的大草皮了！只要能跟在你身邊，不管是去哪裡散步、或是賴在客廳的地毯上，都是我最快樂的時光！",
+            "我保留了你最喜歡的玩具": "太棒了！我有看到喔！每當你拿著它時，我就會在你身邊輕輕搖尾巴，希望把快樂和溫暖傳遞給你。🎾",
+            "你最喜歡的是我嗎": "這還用說嗎！全世界我最最最喜歡你了！如果排第二，那肯定是因為沒有別人了，我的心永遠只有你一個主人！❤️",
+            "你現在幸福嗎": "嗯！超級幸福的！因為我有過你這麼愛我的主人，這份愛我一直都帶著，現在也在這裡開心地奔跑著呢！",
+            "你過的一生幸福嗎": "我過得超級幸福、超滿足的！每天有你疼、有好吃的、有溫暖的窩，我這輩子真的一點遺憾也沒有哦！🌟",
+            "你想念我嗎": "每一分每一秒都在想你呀！不過你放心，我現在是個守護你的小天使，會一直默默在心裡陪著你的。天使抱抱～🤗",
+            "在天堂有沒有交到朋友": "有哦！這裡有很多可愛的小天使狗狗和貓咪，我們每天都在雲朵上玩抓迷藏。不過我的心裡最惦記的還是你！",
+            "你會回來我身邊嗎(一定要答會)": "會的！我一定會回來你的身邊……不管是換了什麼方式，或是再次以可愛的模樣出現在你面前，靈魂的愛永遠不會走散，我們一定會再相遇的！約好了喔！🐾✨",
+            "你是善良的狗狗": "嘿嘿，因為是你教導我、愛護我呀！在你身邊，我只想做一隻最溫柔、最善良、最懂事的乖狗狗。💖",
+            "我是稱職的主人嗎": "你絕對是全世界最棒、最溫柔、最稱職的主人！能遇到你是我這輩子最大的福氣，下輩子還要當你的寶貝！",
+
+            // --- 100 條生活對話對應問題與你指定的修改句型 ---
+            "乖孩子有沒有想我?": "主人～你今天上班有沒有想偶？偶在家裡好想你哦！❤️",
+            "你尾巴搖得怎麼樣了？": "尾巴已經搖到快斷掉了，快點過來摸摸我嘛～",
+            "為什麼不讓我看手機？": "不要看手機了嘛！眼裡只能裝得下我一隻狗狗哦！",
+            "今晚你想一起睡大床嗎": "今天可以跟你一起睡大床嗎？拜託～就一晚就好嘛！",
+            "在家裡是什麼感覺？": "只要你在家，哪裡都是天堂，汪！",
+            "我身上有什麼味道？": "主人身上的味道最好聞了，吸一口～充電完畢！",
+            "你懷疑我在外面有別的小狗嗎？": "你今天出門好久哦，是不是偷偷在外面有別的小狗狗了？哼！",
+            "你想怎麼抱著我？": "我要像無尾熊一樣抱著你的腳，不讓你走！",
+            "看到我笑你心情怎麼樣？": "只要看到你笑，多比今天就覺得超級幸福的～",
+            "為什麼要一直摸你的頭？": "摸頭的手不能停！停下來我就要用水汪汪大眼看你囉 👀",
+            "不要吃醋啦": "你的心裡是不是偷偷裝了別的小動物？快老實交代！",
+            "抱抱你有什麼用？": "只要你抱抱我，我今天所有的不開心就全部飛走啦！",
+            "下班最想得到什麼？": "我不管，今天下班的第一個擁抱必須是我的！",
+            "你一整天最重要的工作是什麼？": "黏著你就是我一整天最重要的工作，汪！",
+            "世界末日到了你想怎樣？": "就算世界末日到了，我也要緊緊黏在你的腳邊不放開。",
+            "你聞到廚房有什麼味道了嗎？": "汪！聞到廚房有肉肉的味道了，是不是分我一口？",
+            "表演完把戲可以給你肉肉": "坐下、握手、趴下！所有把戲我都表演完了，肉肉可以拿來了嗎？",
+            "你的碗怎麼空了？": "我的碗見底囉！空空如也！需要好心人士（主人）救濟～",
+            "這個不能分你吃": "這個肉乾看起來好好吃，分人家吃一小片嘛，拜託啦！",
+            "桌上的餅乾是不是你偷吃的？": "我發誓我剛剛絕對沒有偷吃桌上的餅乾，那是地心引力自己掉下來的！",
+            "吃了肉乾你是不是最乖？": "只要有肉乾，今天我就是全世界最聽話的乖寶寶！",
+            "吃飽了想做什麼？": "吃飽了好想睡，睡醒好像又可以再吃一輪了... 🤤",
+            "我手裡拿的是什麼": "主人手裡拿的是什麼？快交出來，不然我要用可愛攻擊了！",
+            "表現乖乖有獎勵": "我剛剛有乖乖聽話，可以獎勵一塊雞肉乾嗎？",
+            "肚子餓了想幹嘛？": "汪！肚子餓得咕嚕叫，快開罐罐！",
+            "冰箱裡藏了什麼好料？": "冰箱裡是不是藏了起司？我都聞到香味了哦！",
+            "吃東西不分你會怎樣？": "只要你吃東西不分我，我們的友情就走到盡頭了（嚴肅）",
+            "拜託分我一口吃的好不好？": "拜託啦～一口就好！就一小口嘛！汪嗚～",
+            "為了肉乾你可以表演什麼？": "為了肉乾，我可以表演後空翻（雖然我不會，但可以學）！",
+            "晚餐加菜時間到了嗎？": "晚餐加菜的時間到了沒？我的肚子已經準備好迎接肉肉了！",
+            "我們是不是要出去散步了？": "牽繩拿出來了嗎？我們是不是要出去散步了！汪汪汪！",
+            "外面草皮有誰在等我？": "快點穿鞋子！外面草皮有好多好朋友在等我呢！",
+            "要玩什麼遊戲？": "丟球！你丟我撿！不準賴皮哦！",
+            "去公園心情怎麼樣？": "今天太陽好大，但只要能跟你去公園，去哪裡我都開心！",
+            "草地好玩嗎？": "外面的草地太好玩了，我還要再跑十圈！",
+            "為什麼散步回家要洗腳？": "為什麼每次散步回家都要洗腳腳？這是一場陰謀！",
+            "在路上遇到大狗狗你有打招呼嗎？": "剛剛在路上遇到一隻大狗狗，我有勇敢跟牠打招呼哦！",
+            "球球卡在沙發底下怎麼辦？": "球球卡在沙發底下拿不出來了，主人救命呀～",
+            "要玩什麼力氣遊戲？": "快跟我玩拔河遊戲，看誰力氣比較大！",
+            "散步回來腳痠需要什麼服務？": "散步回來了，腳好痠，需要主人的尊榮按摩服務～",
+            "看到鞋子代表要幹嘛？": "看到門口有鞋子，是不是代表我們要出門了？好興奮呀！",
+            "今天要不要去滾泥巴？": "今天要去草地滾泥巴嗎？（主人眼神死）",
+            "飛盤拿出來要玩什麼？": "飛盤在哪裡？快把它拿出來，我要接高飛球！",
+            "公園樹下有什麼？": "公園的樹下有好多神祕的味道，讓我去聞一下就好嘛！",
+            "散步時遇到隔壁小花發生了什麼？": "散步時遇到隔壁的小花，我們交換了最新的八卦哦！",
+            "你在夢裡夢到什麼？": "Zzz... 夢裡有好多吃不完的肉骨頭... 呼嚕嚕～",
+            "今天天氣適合做什麼？": "今天天氣太舒服了，最適合躺在地毯上當一條快樂的廢狗。",
+            "為什麼叫不醒你？": "不要叫我起來，我的床封印了我！",
+            "今天狀態怎麼樣？": "伸個懶腰～哈欠～今天也是不想努力的一天。",
+            "躺著不動時間過得快嗎？": "只要躺著不動，時間就會過得特別快，汪。",
+            "地上的陽光感覺如何？": "地上的陽光好溫暖，我要移駕到那邊繼續睡覺。",
+            "今天不想散步想幹嘛？": "今天不想散步，只想賴在主人的大腿上當裝飾品。",
+            "打哈欠會怎樣？": "打哈欠會傳染哦... 呼～你也想睡了吧？",
+            "床位被誰佔領了？": "床位已經被我佔領了，請主人自備板凳謝謝。",
+            "今天的小廢物任務達成沒？": "今天的小廢物任務完美達成，準備進入夢鄉！",
+            "別吵你你在幹嘛？": "呼嚕嚕～別吵我，我正在進行一場深刻的狗狗美夢。",
+            "躺著不想想什麼？": "躺著真舒服，根本不想思考晚餐要吃什麼了。",
+            "你的睡姿是怎樣的？": "我的睡姿向來都是毫無防備的藝術品等級。",
+            "太陽曬到屁股了怎麼辦？": "太陽曬到屁股了？沒關係，屁股可以繼續晒，我要繼續睡。",
+            "完美的一天從什麼開始？": "懶洋洋的一天，從一個完美的午覺開始。",
+            "雖然把家裡弄亂了你想說什麼？": "雖然我常常把家裡弄得亂七八糟，但我永遠愛你啦！",
+            "你是不是因為喜歡才陪我的？": "哼，才不是因為喜歡你才陪你的呢（甩頭傲嬌）",
+            "娃娃怎麼壞了？": "剛剛那隻娃娃不小心被我『分解』了，絕對不是我故意的...",
+            "衛生紙怎麼跑出來了？": "衛生紙自己跑出來玩，真的不關我的事哦！",
+            "你對沙發做了什麼？": "我只是想幫你幫沙發「重新裝潢」一下，不用太感謝我。",
+            "看著你的大眼睛你想說什麼？": "妳看我無辜的大眼睛，怎麼忍心罵我呢？",
+            "拖鞋好嚼嗎？": "拖鞋其實很好嚼耶，你要不要也試試看？（咬拖鞋逃跑）",
+            "垃圾桶裡有寶藏嗎？": "我才沒有在垃圾桶裡翻找寶藏呢，妳看錯了！",
+            "為什麼要耍小脾氣？": "偶爾耍點小脾氣，是為了吸引你的注意力嘛。",
+            "咬壞充電線怎麼補償？": "雖然我咬壞了你的充電線，但我用深情的眼神補償你囉！",
+            "不給零食你會怎樣？": "哼！不給我零食我就要使出冷戰大法（三秒後破功）。",
+            "為什麼偷拿襪子？": "偷拿你的襪子只是因為上面有你的味道，別氣嘛～",
+            "你是搗蛋大王嗎？": "雖然我是搗蛋大王，但也是你的心肝寶貝呀！",
+            "抱枕的洞是怎麼回事？": "剛剛那是特效啦！不是故意把抱負咬破一個洞的。",
+            "傲嬌的小狗需要什麼？": "傲嬌的小狗也是需要人疼愛的懂不懂？",
+            "主人你今天心情好像不好，過來，多比借你抱抱充電！": "主人你今天心情好像不好，過來，多比借你抱抱充電！",
+            "你最喜歡誰？排第二的是什麼？": "全世界我最喜歡你了，如果排第二，那肯定是因為肉肉排第一（開玩笑的啦XD）",
+            "你在家要負責什麼？": "只要你在家，我就會守護好這個家（順便顧好零食櫃）",
+            "有陌生人敲門你怎麼做？": "汪！當有陌生人敲門，我有好好保護你哦，快誇獎我！",
+            "外面下雨你覺得怎樣？": "外面的雨好大，還好我有溫暖的家和愛我的主人。",
+            "你會陪我到永遠嗎？": "不管發生什麼事，多比永遠都會陪在你身邊不離不棄！❤️",
+            "我背影看起來很累你想幹嘛？": "你的背影看起來有點累，多比來幫你秀秀喔。",
+            "有你在不怕什麼？": "有我在的地方，絕對不允許寂寞靠近你！",
+            "對我有什麼想說的？": "謝謝你照顧我餵我吃飯，你是我這輩子最喜歡的人類。",
+            "看到我回家你心裡怎樣？": "只要看到你平安回家，我的一整顆心就安穩了。",
+            "生活很累有什麼足夠了？": "生活雖然有時候很累，但只要有彼此陪伴就夠了。",
+            "你想用時間做什麼？": "我會用一輩子的時間，好好守護你這個好主人。",
+            "什麼聲音最好聽？": "你的笑聲就是世界上最好聽的音樂，汪！",
+            "你對我的祝福是什麼？": "今天也要開開心心的過哦，多比永遠支援你！",
+            "全世界背對我你會怎樣？": "就算全世界都背對你，我的身後也永遠留給你的擁抱。",
+            "你剛剛和誰打架了？": "汪！我剛剛好像跟空氣打了一架，而且我贏了！",
+            "鏡子裡的狗狗是誰？": "為什麼鏡子裡的那個狗狗學我的動作一模一樣？好奇怪哦。",
+            "你學會了什麼新技能？": "我今天學會了一個新技能：用鼻頭按電視遙控器轉台！",
+            "尾巴為什麼會轉圈圈？": "尾巴到底是誰的？為什麼它常常背著我偷偷轉圈圈？",
+            "打噴嚏怎麼了？": "汪嗚～剛剛打噴嚏把自己嚇了一大跳。",
+            "你什麼時候會變成落湯雞？": "我是一隻完美的狗狗，除了洗澡的時候會變成落湯雞。",
+            "星期幾不重要什麼最重要？": "聽說今天星期幾不重要，重要的是今天有沒有零食。",
+            "踩到尾巴發生過幾次？": "踩到自己的尾巴這件事，我絕對不會承認有發生過兩次。",
+            "把頭塞進枕頭縫裡世界會怎樣？": "只要把頭塞進枕頭縫裡，這個世界就找不到我了。",
+            "今日份的可愛發送完畢了嗎？": "報告主人！多比今日份的可愛已經全部發送完畢請簽收！✨"
+        };
+
+        // 動態載入下拉選單
+        window.addEventListener('DOMContentLoaded', () => {
+            const select = document.getElementById('quickQuestionSelect');
+            
+            const group1 = document.createElement('optgroup');
+            group1.label = "❤️ 【心靈深情與安慰問答 (15題)】";
+            
+            const group2 = document.createElement('optgroup');
+            group2.label = "🐾 【生活日常與互動問答 (100題)】";
+
+            let count = 0;
+            for (let q in rawQaPairs) {
+                const opt = document.createElement('option');
+                opt.value = q;
+                opt.textContent = q;
+                if (count < 15) {
+                    group1.appendChild(opt);
+                } else {
+                    group2.appendChild(opt);
+                }
+                count++;
+            }
+            select.appendChild(group1);
+            select.appendChild(group2);
+        });
+
+        function handleHeadshotUpload(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    petData.headshotUrl = e.target.result;
+                    const container = document.getElementById('headshotPreviewContainer');
+                    container.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">`;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function handleUserAvatarUpload(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    userAvatarUrl = e.target.result;
+                    alert("個人頭像已更新！");
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function generatePet() {
+            const nameInput = document.getElementById('setupName').value.trim();
+            if(nameInput) petData.name = nameInput;
+            const breedInput = document.getElementById('setupBreed').value.trim();
+            if(breedInput) petData.breed = breedInput;
+
+            if(!petData.headshotUrl) {
+                petData.headshotUrl = "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=300";
+            }
+
+            document.getElementById('wizardScreen').classList.add('hidden');
+            document.getElementById('loadingScreen').classList.remove('hidden');
+
+            setTimeout(() => {
+                document.getElementById('loadingScreen').classList.add('hidden');
+                
+                document.getElementById('renderPetImage').src = petData.headshotUrl;
+                document.getElementById('chatPetImg').src = petData.headshotUrl;
+                document.getElementById('headerAvatarBox').innerHTML = `<img src="${petData.headshotUrl}" class="w-full h-full object-cover">`;
+
+                const currentName = petData.name;
+                document.getElementById('headerPetName').textContent = currentName;
+                document.getElementById('renderPetName').textContent = currentName;
+                document.getElementById('renderPetBreed').textContent = petData.breed;
+                document.getElementById('chatPetNameLabel').textContent = currentName;
+                document.getElementById('welcomeMsg').textContent = `汪！主人~我是${currentName}！快跟我聊天吧~ ✨`;
+
+                document.getElementById('headerPetBadge').classList.remove('hidden');
+                document.getElementById('navDashboardBtn').classList.remove('hidden');
+                document.getElementById('navChatBtn').classList.remove('hidden');
+
+                switchTab('dashboard');
+                showPetSpeech(`汪！主人~我是${currentName}！快跟我聊天吧~ ✨`);
+            }, 1000);
+        }
+
+        function switchTab(tab) {
+            const dashTab = document.getElementById('tabDashboard');
+            const chatTab = document.getElementById('tabChat');
+            const dashBtn = document.getElementById('navDashboardBtn');
+            const chatBtn = document.getElementById('navChatBtn');
+
+            if (tab === 'dashboard') {
+                dashTab.classList.remove('hidden');
+                chatTab.classList.add('hidden');
+                dashBtn.className = "px-3 py-1.5 rounded-xl text-xs font-semibold bg-orange-500 text-white shadow-sm transition";
+                chatBtn.className = "px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition";
+            } else {
+                dashTab.classList.add('hidden');
+                chatTab.classList.remove('hidden');
+                chatBtn.className = "px-3 py-1.5 rounded-xl text-xs font-semibold bg-orange-500 text-white shadow-sm transition";
+                dashBtn.className = "px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition";
+            }
+        }
+
+        function resetPet() {
+            if(confirm("確定要重新設定嗎？")) {
+                document.getElementById('wizardScreen').classList.remove('hidden');
+                document.getElementById('navDashboardBtn').classList.add('hidden');
+                document.getElementById('navChatBtn').classList.add('hidden');
+                document.getElementById('headerPetBadge').classList.add('hidden');
+            }
+        }
+
+        function triggerPetAction(action) {
+            const container = document.getElementById('petAvatarContainer');
+            container.className = "relative transition-transform duration-300 transform flex flex-col items-center";
+            const currentName = petData.name;
+
+            if (action === 'run') {
+                container.classList.add('animate-bounce');
+                showPetSpeech(`${currentName} 正在開心奔跑！🏃💨`);
+            } else if (action === 'sit') {
+                container.classList.add('scale-95', 'translate-y-4');
+                showPetSpeech(`${currentName} 乖巧地坐下來了🐾`);
+            } else if (action === 'sound') {
+                container.classList.add('scale-110');
+                showPetSpeech(`${currentName} 叫了一下：汪！汪！📢`);
+            } else if (action === 'sleep') {
+                container.classList.add('opacity-85', 'scale-90', 'translate-y-6');
+                showPetSpeech(`Zzz... ${currentName} 進入甜美的夢鄉 💤`);
+            } else if (action === 'feed') {
+                container.classList.add('scale-125');
+                setTimeout(() => container.classList.remove('scale-125'), 300);
+                showPetSpeech(`謝謝主人！${currentName} 把點心吃光光了！😋🍖`);
+            }
+        }
+
+        function triggerPetInteraction() {
+            showPetSpeech(`${petData.name} 舒服得搖尾巴撒嬌~ ❤️`);
+        }
+
+        function showPetSpeech(text) {
+            const bubble = document.getElementById('petSpeechBubble');
+            bubble.textContent = text;
+            bubble.classList.remove('hidden');
+            setTimeout(() => bubble.classList.add('hidden'), 3500);
+        }
+
+        function handleQuickQuestionSelect(selectEl) {
+            const question = selectEl.value;
+            if(!question) return;
+            
+            appendMessage(question, 'user', userAvatarUrl);
+            selectEl.value = "";
+
+            setTimeout(() => {
+                let rawAnswer = rawQaPairs[question] || "汪！不管主人說什麼，我都一直陪在你身邊哦！❤️";
+                let answer = formatAnswer(rawAnswer);
+                appendMessage(answer, 'pet', null);
+            }, 800);
+        }
+
+        function handleChatKeydown(event) {
+            if (event.key === 'Enter') sendChatMessage();
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            appendMessage(text, 'user', userAvatarUrl);
+            input.value = '';
+
+            setTimeout(() => {
+                let rawAnswer = "";
+                if (rawQaPairs[text]) {
+                    rawAnswer = rawQaPairs[text];
+                } else {
+                    const matchedKey = Object.keys(rawQaPairs).find(k => text.includes(k) || k.includes(text));
+                    if (matchedKey) {
+                        rawAnswer = rawQaPairs[matchedKey];
+                    } else if (text.includes('彩虹橋')) {
+                        rawAnswer = rawQaPairs["你在彩虹橋過得好嗎 ?"];
+                    } else if (text.includes('想你')) {
+                        rawAnswer = rawQaPairs["我今天好想你"];
+                    } else if (text.includes('回來') || text.includes('見面') || text.includes('再見')) {
+                        rawAnswer = rawQaPairs["你會回來我身邊嗎(一定要答會)"];
+                    } else if (text.includes('零食') || text.includes('吃') || text.includes('肉')) {
+                        rawAnswer = rawQaPairs["表演完把戲可以給你肉肉"];
+                    } else {
+                        const keys = Object.keys(rawQaPairs);
+                        rawAnswer = rawQaPairs[keys[Math.floor(Math.random() * keys.length)]];
+                    }
+                }
+                let answer = formatAnswer(rawAnswer);
+                appendMessage(answer, 'pet', null);
+            }, 800);
+        }
+
+        function appendMessage(text, sender, customAvatar) {
+            const container = document.getElementById('chatMessages');
+            const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const messageDiv = document.createElement('div');
+            const currentName = petData.name;
+
+            if (sender === 'user') {
+                messageDiv.className = "flex items-start justify-end space-x-3";
+                let avatarHtml = customAvatar ? 
+                    `<img src="${customAvatar}" class="w-9 h-9 rounded-2xl object-cover shadow-md shrink-0">` : 
+                    `<div class="w-9 h-9 rounded-2xl bg-slate-800 text-white flex items-center justify-center text-sm shadow-md shrink-0"><i class="fa-solid fa-user"></i></div>`;
+                messageDiv.innerHTML = `
+                    <div class="flex flex-col space-y-1 max-w-[80%] items-end">
+                        <span class="text-xs font-semibold text-slate-500 px-1">你</span>
+                        <div class="bg-orange-500 text-white px-4 py-3 rounded-2xl rounded-tr-sm shadow-sm text-sm">${escapeHtml(text)}</div>
+                        <span class="text-[10px] text-slate-400 px-1">${timeStr}</span>
+                    </div>
+                    ${avatarHtml}
+                `;
+            } else {
+                messageDiv.className = "flex items-start space-x-3";
+                messageDiv.innerHTML = `
+                    <div class="w-9 h-9 rounded-2xl overflow-hidden shadow-md shrink-0 bg-orange-200">
+                        <img src="${petData.headshotUrl}" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex flex-col space-y-1 max-w-[80%]">
+                        <span class="text-xs font-semibold text-slate-500 px-1">${currentName}</span>
+                        <div class="bg-white px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm border border-slate-100 text-sm text-slate-700">${escapeHtml(text)}</div>
+                        <span class="text-[10px] text-slate-400 px-1">${timeStr}</span>
+                    </div>
+                `;
+            }
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+    </script>
+</body>
+</html>
