@@ -38,7 +38,7 @@
         <header class="bg-white/90 backdrop-blur-md px-4 py-3 border-b border-orange-100 flex items-center justify-between z-20 shrink-0">
             <div class="flex items-center space-x-3">
                 <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center text-white shadow-md shadow-orange-500/20 overflow-hidden" id="headerAvatarBox">
-                    <i class="fa-solid fa-paw text-lg"></i>
+                    <img src="image_0.png" class="w-full h-full object-cover" alt="預設寵物頭像">
                 </div>
                 <div>
                     <h1 class="font-display font-bold text-lg text-slate-800 flex items-center gap-2">
@@ -93,8 +93,7 @@
                             <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">上傳寵物大頭照 (1張)</label>
                             <label class="border-2 border-dashed border-orange-200 hover:border-orange-400 bg-white rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer transition group h-32 relative overflow-hidden">
                                 <div id="headshotPreviewContainer" class="absolute inset-0 flex flex-col items-center justify-center bg-white">
-                                    <i class="fa-solid fa-camera-retro text-orange-400 group-hover:scale-110 transition text-2xl mb-1"></i>
-                                    <span class="text-xs text-slate-500 font-medium" id="headshotText">點擊上傳寵物大頭照</span>
+                                    <img src="image_0.png" class="w-full h-full object-cover" alt="預設寵物預覽">
                                 </div>
                                 <input type="file" id="headshotInput" accept="image/*" class="hidden" onchange="handleHeadshotUpload(this)">
                             </label>
@@ -236,23 +235,24 @@
 
     <!-- Script -->
     <script>
+        // 設定預設圖片路徑
+        const DEFAULT_PET_AVATAR = "image_0.png";
+
         let petData = {
             name: "多比",
             breed: "比熊犬 (Bichon Frise)",
-            headshotUrl: ""
+            headshotUrl: DEFAULT_PET_AVATAR
         };
         let userAvatarUrl = null;
 
-        // 動態取得寵物名字的輔助函式（將原本固定的 "多比" 換成使用者設定的名字）
+        // 動態取得寵物名字的輔助函式
         function formatAnswer(text) {
             const currentName = petData.name || "多比";
-            // 將字串中的 "多比" 動態替換為目前設定的名字
             return text.replace(/多比/g, currentName);
         }
 
-        // 1. 15個深情安慰與100個生活對話問答對應表（已將答案中的 "多比" 支援動態替換）
+        // 15個深情安慰與100個生活對話問答對應表
         const rawQaPairs = {
-            // --- 15 個深情安慰問題 ---
             "你在彩虹橋過得好嗎 ?": "我在這裡過得超級好哦！這裡有無限奔跑的綠草地、曬不完的暖陽，還有吃不完的肉肉。而且一點都不痛了，你不用擔心我哦！❤️",
             "我今天好想你": "我也好想好想你！每當微風吹過的時候，那就是我在輕輕蹭你的臉頰喔。你要好好吃飯、好好照顧自己，知道嗎？✨",
             "謝謝你曾經的陪伴": "不，該說謝謝的是我！能成為你的狗狗，是我這輩子最幸福、最驕傲的事。謝謝你給了我全世界最溫暖的家！🐾",
@@ -269,7 +269,6 @@
             "你是善良的狗狗": "嘿嘿，因為是你教導我、愛護我呀！在你身邊，我只想做一隻最溫柔、最善良、最懂事的乖狗狗。💖",
             "我是稱職的主人嗎": "你絕對是全世界最棒、最溫柔、最稱職的主人！能遇到你是我這輩子最大的福氣，下輩子還要當你的寶貝！",
 
-            // --- 100 條生活對話對應問題與你指定的修改句型 ---
             "乖孩子有沒有想我?": "主人～你今天上班有沒有想偶？偶在家裡好想你哦！❤️",
             "你尾巴搖得怎麼樣了？": "尾巴已經搖到快斷掉了，快點過來摸摸我嘛～",
             "為什麼不讓我看手機？": "不要看手機了嘛！眼裡只能裝得下我一隻狗狗哦！",
@@ -348,7 +347,7 @@
             "主人你今天心情好像不好，過來，多比借你抱抱充電！": "主人你今天心情好像不好，過來，多比借你抱抱充電！",
             "你最喜歡誰？排第二的是什麼？": "全世界我最喜歡你了，如果排第二，那肯定是因為肉肉排第一（開玩笑的啦XD）",
             "你在家要負責什麼？": "只要你在家，我就會守護好這個家（順便顧好零食櫃）",
-            "有陌生人敲門你怎麼做？": "汪！當有陌生人敲門，我有好好保護你哦，快誇獎我！",
+            "有陌生人敲門你怎麼 do？": "汪！當有陌生人敲門，我有好好保護你哦，快誇獎我！",
             "外面下雨你覺得怎樣？": "外面的雨好大，還好我有溫暖的家和愛我的主人。",
             "你會陪我到永遠嗎？": "不管發生什麼事，多比永遠都會陪在你身邊不離不棄！❤️",
             "我背影看起來很累你想幹嘛？": "你的背影看起來有點累，多比來幫你秀秀喔。",
@@ -428,7 +427,7 @@
             if(breedInput) petData.breed = breedInput;
 
             if(!petData.headshotUrl) {
-                petData.headshotUrl = "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=300";
+                petData.headshotUrl = DEFAULT_PET_AVATAR;
             }
 
             document.getElementById('wizardScreen').classList.add('hidden');
