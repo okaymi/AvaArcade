@@ -36,7 +36,7 @@
         
         <!-- Header -->
         <header class="bg-white/90 backdrop-blur-md px-4 py-3 border-b border-orange-100 flex items-center justify-between z-20 shrink-0">
-  <div class="flex items-center space-x-3">
+            <div class="flex items-center space-x-3">
                 <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center text-white shadow-md shadow-orange-500/20 overflow-hidden" id="headerAvatarBox">
                     <i class="fa-solid fa-paw text-lg"></i>
                 </div>
@@ -81,7 +81,7 @@
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">寵物名字</label>
-                                <input type="text" id="setupName" value="多比" class="w-full px-4 py-3 rounded-2xl bg-white border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
+                                <input type="text" id="setupName" value="多比" oninput="getLatestPetName()" class="w-full px-4 py-3 rounded-2xl bg-white border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">品種 / 毛色特徵</label>
@@ -90,7 +90,7 @@
                         </div>
 
                         <!-- Single Headshot Upload -->
-  <div>
+                        <div>
                             <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">上傳寵物大頭照 (1張)</label>
                             <label class="border-2 border-dashed border-orange-200 hover:border-orange-400 bg-white rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer transition group h-32 relative overflow-hidden">
                                 <div id="headshotPreviewContainer" class="absolute inset-0 flex flex-col items-center justify-center bg-white">
@@ -238,8 +238,9 @@
 
     <!-- Script -->
     <script>
-        // 設定預設圖片路徑
+        // 設定預設圖片路徑與 Vercel 後端 API 網址
         const DEFAULT_PET_AVATAR = "image_0.jpeg";
+        const VERCEL_API_URL = "https://rainbow-bridge-api.vercel.app/api/chat";
 
         let petData = {
             name: "多比",
@@ -248,13 +249,52 @@
         };
         let userAvatarUrl = null;
 
-        // 動態取得寵物名字的輔助函式
+        // 取得最新輸入的寵物名字，並同步更新畫面上所有顯示位置
+        function getLatestPetName() {
+            const setupInput = document.getElementById('setupName');
+            const typedName = setupInput ? setupInput.value.trim() : "";
+            const finalName = typedName || petData.name || "多比";
+
+            petData.name = finalName;
+            if (document.getElementById('headerPetName')) {
+                document.getElementById('headerPetName').textContent = finalName;
+            }
+            if (document.getElementById('renderPetName')) {
+                document.getElementById('renderPetName').textContent = finalName;
+            }
+            if (document.getElementById('chatPetNameLabel')) {
+                document.getElementById('chatPetNameLabel').textContent = finalName;
+            }
+
+            return finalName;
+        }
+
+        // 動態取得寵物名字的輔助函式（用於備援對話庫）
         function formatAnswer(text) {
-            const currentName = petData.name || "多比";
+            const currentName = getLatestPetName();
             return text.replace(/多比/g, currentName);
         }
 
-        // 15個深情安慰與100個生活對話問答對應表
+        // 專門負責將 User 文字與寵物名字傳給 AI，並拿回 AI 回覆的方法
+        async function askAI(userText, petName) {
+            const response = await fetch(VERCEL_API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    message: userText,
+                    petName: petName
+                })
+            });
+
+            const data = await response.json();
+            if (!response.ok || !data.reply) {
+                throw new Error(data?.error || "AI 暫時無回應");
+            }
+
+            return data.reply;
+        }
+
+        // 15個深情安慰與100個生活對話問答對應表（作為網路或限流時的備援）
         const rawQaPairs = {
             "你在彩虹橋過得好嗎 ?": "我在這裡過得超級好哦！這裡有無限奔跑的綠草地、曬不完的暖陽，還有吃不完的肉肉。而且一點都不痛了，你不用擔心我哦！❤️",
             "我今天好想你": "我也好想好想你！每當微風吹過的時候，那就是我在輕輕蹭你的臉頰喔。你要好好吃飯、好好照顧自己，知道嗎？✨",
@@ -424,8 +464,7 @@
         }
 
         function generatePet() {
-            const nameInput = document.getElementById('setupName').value.trim();
-            if(nameInput) petData.name = nameInput;
+            const currentName = getLatestPetName();
             const breedInput = document.getElementById('setupBreed').value.trim();
             if(breedInput) petData.breed = breedInput;
 
@@ -443,7 +482,6 @@
                 document.getElementById('chatPetImg').src = petData.headshotUrl;
                 document.getElementById('headerAvatarBox').innerHTML = `<img src="${petData.headshotUrl}" class="w-full h-full object-cover">`;
 
-                const currentName = petData.name;
                 document.getElementById('headerPetName').textContent = currentName;
                 document.getElementById('renderPetName').textContent = currentName;
                 document.getElementById('renderPetBreed').textContent = petData.breed;
@@ -490,7 +528,7 @@
         function triggerPetAction(action) {
             const container = document.getElementById('petAvatarContainer');
             container.className = "relative transition-transform duration-300 transform flex flex-col items-center";
-            const currentName = petData.name;
+            const currentName = getLatestPetName();
 
             if (action === 'run') {
                 container.classList.add('animate-bounce');
@@ -512,7 +550,7 @@
         }
 
         function triggerPetInteraction() {
-            showPetSpeech(`${petData.name} 舒服得搖尾巴撒嬌~ ❤️`);
+            showPetSpeech(`${getLatestPetName()} 舒服得搖尾巴撒嬌~ ❤️`);
         }
 
         function showPetSpeech(text) {
@@ -526,29 +564,60 @@
             const question = selectEl.value;
             if(!question) return;
             
-            appendMessage(question, 'user', userAvatarUrl);
+            const input = document.getElementById('chatInput');
+            input.value = question;
             selectEl.value = "";
-
-            setTimeout(() => {
-                let rawAnswer = rawQaPairs[question] || "汪！不管主人說什麼，我都一直陪在你身邊哦！❤️";
-                let answer = formatAnswer(rawAnswer);
-                appendMessage(answer, 'pet', null);
-            }, 800);
+            sendChatMessage();
         }
 
         function handleChatKeydown(event) {
             if (event.key === 'Enter') sendChatMessage();
         }
 
-        function sendChatMessage() {
+        // 讀取 User 輸入 -> 呼叫 askAI -> 將回覆 show 返俾 User
+        async function sendChatMessage() {
             const input = document.getElementById('chatInput');
             const text = input.value.trim();
             if (!text) return;
 
+            // 步驟 A：將 User 輸入的文字顯示在畫面上
             appendMessage(text, 'user', userAvatarUrl);
             input.value = '';
 
-            setTimeout(() => {
+            // 取得最新輸入的寵物名字
+            const currentName = getLatestPetName();
+
+            // 顯示「思考中」提示氣泡
+            const container = document.getElementById('chatMessages');
+            const loadingId = "loading-" + Date.now();
+            const loadingDiv = document.createElement('div');
+            loadingDiv.id = loadingId;
+            loadingDiv.className = "flex items-start space-x-3";
+            loadingDiv.innerHTML = `
+                <div class="w-9 h-9 rounded-2xl overflow-hidden shadow-md shrink-0 bg-orange-200">
+                    <img src="${petData.headshotUrl}" class="w-full h-full object-cover">
+                </div>
+                <div class="flex flex-col space-y-1 max-w-[80%]">
+                    <span class="text-xs font-semibold text-slate-500 px-1">${escapeHtml(currentName)}</span>
+                    <div class="bg-white px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm border border-slate-100 text-sm text-slate-400 italic">
+                        正在搖尾巴想怎麼回答你... 🐾
+                    </div>
+                </div>
+            `;
+            container.appendChild(loadingDiv);
+            container.scrollTop = container.scrollHeight;
+
+            try {
+                // 步驟 B：將 User 文字傳給 Vercel 後端 -> OpenRouter AI
+                const aiReply = await askAI(text, currentName);
+
+                // 步驟 C：移除思考中提示，將 AI 的回覆 show 返俾 User
+                document.getElementById(loadingId)?.remove();
+                appendMessage(aiReply, 'pet', null);
+            } catch (error) {
+                console.warn("AI 連線暫時異常，改用內建對話庫備援：", error);
+                document.getElementById(loadingId)?.remove();
+
                 let rawAnswer = "";
                 if (rawQaPairs[text]) {
                     rawAnswer = rawQaPairs[text];
@@ -569,16 +638,15 @@
                         rawAnswer = rawQaPairs[keys[Math.floor(Math.random() * keys.length)]];
                     }
                 }
-                let answer = formatAnswer(rawAnswer);
-                appendMessage(answer, 'pet', null);
-            }, 800);
+                appendMessage(formatAnswer(rawAnswer), 'pet', null);
+            }
         }
 
         function appendMessage(text, sender, customAvatar) {
             const container = document.getElementById('chatMessages');
             const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             const messageDiv = document.createElement('div');
-            const currentName = petData.name;
+            const currentName = getLatestPetName();
 
             if (sender === 'user') {
                 messageDiv.className = "flex items-start justify-end space-x-3";
@@ -600,7 +668,7 @@
                         <img src="${petData.headshotUrl}" class="w-full h-full object-cover">
                     </div>
                     <div class="flex flex-col space-y-1 max-w-[80%]">
-                        <span class="text-xs font-semibold text-slate-500 px-1">${currentName}</span>
+                        <span class="text-xs font-semibold text-slate-500 px-1">${escapeHtml(currentName)}</span>
                         <div class="bg-white px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm border border-slate-100 text-sm text-slate-700">${escapeHtml(text)}</div>
                         <span class="text-[10px] text-slate-400 px-1">${timeStr}</span>
                     </div>
