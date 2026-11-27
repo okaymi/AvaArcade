@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ava's Arcade 🐾</title>
+    <title>Ava 的粉紅遊戲小天地 🐾</title>
     <style>
         * {
             margin: 0;
@@ -126,7 +126,19 @@
 
         .game-icon {
             font-size: 3rem;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
+        }
+
+        .math-badge {
+            display: inline-block;
+            background: #fff0f6;
+            color: #d81b60;
+            border: 1px solid #ff85c0;
+            font-size: 0.8rem;
+            font-weight: bold;
+            padding: 4px 12px;
+            border-radius: 999px;
+            margin-bottom: 10px;
         }
 
         .game-title {
@@ -197,20 +209,30 @@
         <nav>
             <a href="index.html">首頁</a>
             <a href="#games">遊戲列表</a>
+            <a href="https://github.com" target="_blank">GitHub</a>
         </nav>
     </header>
 
     <!-- 網頁主體 -->
     <main>
         <div class="hero">
-            <h1>🐶 歡迎嚟到我嘅 遊戲小天地 🐱</h1>
+            <h1>🐶 歡迎嚟到我嘅 HTML 遊戲小天地 🐱</h1>
             <p>✨ 呢度有我親手整嘅唔同小遊戲，快啲揀一個黎玩下啦～ ✨</p>
         </div>
 
         <!-- 遊戲選擇按鈕 / 卡片區域 -->
         <div class="game-grid" id="games">
-            <!-- 遊戲 1：彩虹橋寵物心靈連線 -->
-            <a href="RainbowBridge.html" class="game-card">
+            <!-- 新增小遊戲：Maths Monster -->
+            <a href="https://okaymi.github.io/maths-monster/" target="_blank" rel="noopener noreferrer" class="game-card">
+                <div class="game-icon">🧮</div>
+                <div class="math-badge">➕➖✖️➗ 數學挑戰</div>
+                <div class="game-title">Maths Monster</div>
+                <div class="game-desc">動動腦筋解算式，挑戰數學小怪獸！</div>
+                <div class="play-btn">立即遊玩</div>
+            </a>
+
+            <!-- 舊遊戲 1：彩虹橋寵物心靈連線 -->
+            <a href="games/game1.html" class="game-card">
                 <div class="game-icon">🐕‍🦺</div>
                 <div class="game-title">彩虹橋</div>
                 <div class="game-desc">彩虹橋寵物心靈連線,你的AI寵物!</div>
